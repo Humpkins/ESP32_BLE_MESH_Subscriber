@@ -342,8 +342,8 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Example Configuration
 #
-# CONFIG_BLE_MESH_ESP_WROOM_32 is not set
-CONFIG_BLE_MESH_ESP_WROVER=y
+CONFIG_BLE_MESH_ESP_WROOM_32=y
+# CONFIG_BLE_MESH_ESP_WROVER is not set
 # end of Example Configuration
 
 #
