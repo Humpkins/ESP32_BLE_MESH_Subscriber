@@ -50,7 +50,9 @@ SemaphoreHandle_t xSerialData = NULL;
 #define ESP_BLE_MESH_VND_MODEL_OP_SEND ESP_BLE_MESH_MODEL_OP_3(0x00, CID_ESP)
 #define ESP_BLE_MESH_VND_MODEL_OP_STATUS ESP_BLE_MESH_MODEL_OP_3(0x01, CID_ESP)
 #define OP_CODE_SIZE 0x03
-#define ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ ESP_BLE_MESH_MODEL_OP_3(0x5E, CID_ESP)
+#define ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ ESP_BLE_MESH_MODEL_OP_3(0x03, CID_ESP)
+
+#define MEM_ARE_EQUAL 0X00
 
 static uint8_t dev_uuid[ESP_BLE_MESH_OCTET16_LEN] = {0x32, 0x10};
 
@@ -78,11 +80,12 @@ static esp_ble_mesh_model_t root_models[] = {
 };
 
 static esp_ble_mesh_model_op_t vnd_op[] = {
-    ESP_BLE_MESH_MODEL_OP(ESP_BLE_MESH_VND_MODEL_OP_SEND, 0),
+    ESP_BLE_MESH_MODEL_OP(ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ, 3),
     ESP_BLE_MESH_MODEL_OP_END,
 };
 
-ESP_BLE_MESH_MODEL_PUB_DEFINE(sensor_pub, UART_BUF_SIZE + OP_CODE_SIZE + 4, ROLE_NODE);
+// ESP_BLE_MESH_MODEL_PUB_DEFINE(sensor_pub, UART_BUF_SIZE + OP_CODE_SIZE + 4, ROLE_NODE);
+ESP_BLE_MESH_MODEL_PUB_DEFINE(sensor_pub, UART_BUF_SIZE + OP_CODE_SIZE, ROLE_NODE);
 
 static esp_ble_mesh_model_t vnd_models[] = {
     ESP_BLE_MESH_VENDOR_MODEL(CID_ESP, ESP_BLE_MESH_VND_MODEL_ID_SERVER,
@@ -192,29 +195,27 @@ static void example_ble_mesh_custom_model_cb(esp_ble_mesh_model_cb_event_t event
     {
 
     case ESP_BLE_MESH_MODEL_OPERATION_EVT:
-        uint16_t tid = *(uint16_t *)param->model_operation.msg;
 
-        ESP_LOG_BUFFER_HEX( "PKG", param->client_recv_publish_msg.msg, param->client_recv_publish_msg.length );
-        printf( "OPCODE %03X\n", (unsigned int) param->client_recv_publish_msg.opcode );
+        //  If vendor opcode is as expected...
+        if (  param->model_operation.opcode == ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ ) {
 
-        if ( param->model_operation.opcode == ESP_BLE_MESH_VND_MODEL_OP_SEND )
-        {
-            // uint16_t tid = *(uint16_t *)param->model_operation.msg;
+            ESP_LOG_BUFFER_HEX( "RECEBEU", param->client_recv_publish_msg.msg, param->client_recv_publish_msg.length );
+            printf( "OPCODE %03X\n", (unsigned int) param->client_recv_publish_msg.opcode );
+
+        } else if ( param->model_operation.opcode == ESP_BLE_MESH_VND_MODEL_OP_SEND ) {
+
+            uint16_t tid = *(uint16_t *)param->model_operation.msg;
             ESP_LOGI(TAG, "Recv 0x%06" PRIx32 ", tid 0x%04x", param->model_operation.opcode, tid);
             esp_err_t err = esp_ble_mesh_server_model_send_msg(&vnd_models[0],
-                                                               param->model_operation.ctx, ESP_BLE_MESH_VND_MODEL_OP_STATUS,
-                                                               sizeof(tid), (uint8_t *)&tid);
+                                                                param->model_operation.ctx, ESP_BLE_MESH_VND_MODEL_OP_STATUS,
+                                                                sizeof(tid), (uint8_t *)&tid);
             if (err)
             {
                 ESP_LOGE(TAG, "Failed to send message 0x%06x", ESP_BLE_MESH_VND_MODEL_OP_STATUS);
             }
 
-        } else if (param->model_operation.opcode == ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ) {
-
-            uint16_t tid = *(uint16_t *)param->model_operation.msg;
-            ESP_LOG_BUFFER_HEX( TAG, &tid, param->model_operation.length );
-            
         }
+
         break;
     case ESP_BLE_MESH_MODEL_SEND_COMP_EVT:
         if (param->model_send_comp.err_code)
