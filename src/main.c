@@ -191,6 +191,8 @@ static void example_ble_mesh_custom_model_cb(esp_ble_mesh_model_cb_event_t event
                                              esp_ble_mesh_model_cb_param_t *param)
 {
 
+    uint8_t pub_data[UART_BUF_SIZE + OP_CODE_SIZE];
+
     switch (event)
     {
 
@@ -227,8 +229,6 @@ static void example_ble_mesh_custom_model_cb(esp_ble_mesh_model_cb_event_t event
         break;
 
     case ESP_BLE_MESH_MODEL_PUBLISH_UPDATE_EVT:
-
-        uint8_t pub_data[UART_BUF_SIZE + OP_CODE_SIZE];
 
         pub_data[0] = (ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ >> 16) & 0xFF;
         pub_data[1] = (ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ >> 8) & 0xFF;
