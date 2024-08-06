@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "uart.h": "c",
+        "esp_check.h": "c",
+        "ble_mesh_example_init.h": "c"
+    }
+}
