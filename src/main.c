@@ -199,7 +199,7 @@ static void example_ble_mesh_custom_model_cb(esp_ble_mesh_model_cb_event_t event
     case ESP_BLE_MESH_MODEL_OPERATION_EVT:
 
         //  If vendor opcode is as expected...
-        if (  param->model_operation.opcode == ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ ) {
+        if (  param->client_recv_publish_msg.opcode == ESP_BLE_MESH_VND_MODEL_OP_SUBS_READ ) {
 
             ESP_LOG_BUFFER_HEX( "RECEBEU", param->client_recv_publish_msg.msg, param->client_recv_publish_msg.length );
             printf( "OPCODE %03X\n", (unsigned int) param->client_recv_publish_msg.opcode );
